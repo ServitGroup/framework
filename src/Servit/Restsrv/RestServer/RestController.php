@@ -3,7 +3,8 @@ namespace Servit\Restsrv\RestServer;
 use Servit\Restsrv\Libs\DbTrait;
 use Servit\Restsrv\Libs\Nonce;
 use Servit\Restsrv\Libs\Csrf;
-use \Servit\Restsrv\Libs\Request;
+use Servit\Restsrv\Libs\Request;
+use Servit\Restsrv\RestServer\Restjwt;
 
 class  RestController {
 

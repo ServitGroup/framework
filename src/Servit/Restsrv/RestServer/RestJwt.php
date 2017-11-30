@@ -8,7 +8,7 @@ use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Token;
 use Servit\Restsrv\RestServer\RestException;
 
-class RestJwt {
+class Restjwt {
 
 	private $token = null; // String   header.palyload.signature
 	public  $signer=null ; //obj of Lcobucci\JWT\Signer
