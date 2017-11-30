@@ -1,0 +1,26 @@
+{
+    "name": "servit/restsrv",
+    "description": "Servit Restful Web Server",
+    "authors": [
+        {
+            "name": "Thongchai Lim",
+            "email": "thongchai@servit.co.th"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",        
+        "illuminate/database": "5.4.36",
+        "illuminate/events": "5.4.36",
+        "symfony/var-dumper": "3.3.10",
+        "lcobucci/jwt": "^3.2.2",
+        "php-curl-class/php-curl-class": "^7.4",
+        "eoghanobrien/php-simple-mail": "^1.7",
+        "vlucas/phpdotenv": "~2.2"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Servit\\Restsrv\\": ""
+        }
+    }
+}
