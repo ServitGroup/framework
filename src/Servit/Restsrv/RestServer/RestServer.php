@@ -284,7 +284,8 @@ class RestServer
         $this->jsonAssoc = ($value === true);
     }
 
-    public function addClass($class, $basePath = '')  {
+    public function addClass($class, $basePath = '')
+    {
         $path = glob($_SERVER["DOCUMENT_ROOT"])[0];
         $filepath = $path.$this->root.'controllers/'.$class.'.php';
         if (file_exists($filepath)) {
@@ -309,20 +310,21 @@ class RestServer
     }
 
     public function addThemeClass($class)
-    {      
+    {
         $path = glob($_SERVER["DOCUMENT_ROOT"])[0];
         $filepath = $path.$this->root.'controllers/'.$class.'.php';
-        if (file_exists($filepath)){
+        if (file_exists($filepath)) {
             require_once($filepath);
             $class = new $class();
-            $class->server = $this;       
-        } 
+            $class->server = $this;
+        }
         $this->errorClasses[] = $class;
     }
 
     public function handleError($statusCode, $errorMessage = null)
     {
-        list($theme,) = explode('/',$this->url);
+        $roottheme = null;
+        list($theme,) = explode('/', $this->url);
         $method = "handle$statusCode";
         foreach ($this->errorClasses as $class) {
             if (is_object($class)) {
@@ -330,26 +332,34 @@ class RestServer
             } elseif (class_exists($class)) {
                 $reflection = new ReflectionClass($class);
             }
-            
-            // dump($class);
-            if($class->gettheme() == $theme){
+            if ($class->gettheme() == '') {
+                $roottheme = $reflection;
+            }
+            if ($class->gettheme() == $theme) {
                 if (isset($reflection)) {
                     if ($reflection->hasMethod($method)) {
                             $obj = is_string($class) ? new $class() : $class;
                             $obj->$method();
                             return;
-                        }
                     }
+                }
             }
         } // end foreach
-        if (!$errorMessage) {
-            $errorMessage = $this->codes[$statusCode];
+        if ($roottheme && $roottheme->hasMethod($method)) {
+                $obj = is_string($class) ? new $class() : $class;
+                $obj->$method();
+                return;
+        } else {
+            if (!$errorMessage) {
+                $errorMessage = $this->codes[$statusCode];
+            }
+            $this->setStatus($statusCode);
+            $this->sendData(array('error' => array('code' => $statusCode, 'message' => $errorMessage)));
         }
-        $this->setStatus($statusCode);
-        $this->sendData(array('error' => array('code' => $statusCode, 'message' => $errorMessage)));
     }
 
-    protected function loadCache()  {
+    protected function loadCache()
+    {
         
         if ($this->cached !== null) {
             return;
@@ -376,7 +386,8 @@ class RestServer
         }
     }
 
-    protected function findUrl(){
+    protected function findUrl()
+    {
         $urls = $this->map[$this->method];
         if (!$urls) {
             return null;
@@ -435,7 +446,8 @@ class RestServer
         }
     }
 
-    protected function generateMap($class, $basePath)   { 
+    protected function generateMap($class, $basePath)
+    {
         if (is_object($class)) {
             $reflection = new ReflectionObject($class);
         } elseif (class_exists($class)) {
@@ -444,83 +456,89 @@ class RestServer
         
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);    //@todo $reflection might not be instantiated
         foreach ($methods as $method) {
-            if (!in_array($method->name, ['init','__construct','authorize','__call','__destruct']) && substr( $method->name, 0, 6 ) !== "handle"  ) {
+            if (!in_array($method->name, ['init','__construct','authorize','__call','__destruct']) && substr($method->name, 0, 6) !== "handle") {
                 $doc = $method->getDocComment();
                 $noAuth = strpos($doc, '@noAuth') !== false;
-                
-                $params = $method->getParameters();
-                if (preg_match_all('/@url[ \t]+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)[ \t]+\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
-                    foreach ($matches as $match) {
-                        $httpMethod = $match[1];
-                        $url = $basePath . $match[2];
-                        if ($url && $url[strlen($url) - 1] == '/') {
-                            $url = substr($url, 0, -1);
-                        }
-                        $call = array($class, $method->getName());
-                        $args = array();
-                        foreach ($params as $param) {
-                            $args[$param->getName()] = $param->getPosition();
-                        }
-                        $call[] = $args;
-                        $call[] = null;
-                        $call[] = $noAuth;
-                        $this->map[$httpMethod][$url] = $call;
-                    }
-                } else {
-                    $chk = 1;
-                    $httpmethods = ['get','post','put','patch','delete','head','options'];
-                    foreach ($httpmethods as $httpMethod) {
-                        $match = preg_split('@(?=[A-Z])@', $method->getName());
-                        if ($match[0]== $httpMethod) {
-                                $chk = 0;
-                                $url = strtolower($basePath.$match[1]);
+                $test = strpos($doc, '@Test') !== false;
+                $add = true;
+                if (APPMODE=='production' && $test) {
+                    $add = false;
+                }
+                if ($add) {
+                    $params = $method->getParameters();
+                    if (preg_match_all('/@url[ \t]+(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)[ \t]+\/?(\S*)/s', $doc, $matches, PREG_SET_ORDER)) {
+                        foreach ($matches as $match) {
+                            $httpMethod = $match[1];
+                            $url = $basePath . $match[2];
                             if ($url && $url[strlen($url) - 1] == '/') {
                                 $url = substr($url, 0, -1);
                             }
-                                
-                                $args = array();
+                            $call = array($class, $method->getName());
+                            $args = array();
                             foreach ($params as $param) {
                                 $args[$param->getName()] = $param->getPosition();
                             }
+                            $call[] = $args;
+                            $call[] = null;
+                            $call[] = $noAuth;
+                            $this->map[$httpMethod][$url] = $call;
+                        }
+                    } else {
+                        $chk = 1;
+                        $httpmethods = ['get','post','put','patch','delete','head','options'];
+                        foreach ($httpmethods as $httpMethod) {
+                            $match = preg_split('@(?=[A-Z])@', $method->getName());
+                            if ($match[0]== $httpMethod) {
+                                    $chk = 0;
+                                    $url = strtolower($basePath.$match[1]);
+                                if ($url && $url[strlen($url) - 1] == '/') {
+                                    $url = substr($url, 0, -1);
+                                }
+                                            
+                                    $args = array();
+                                foreach ($params as $param) {
+                                    $args[$param->getName()] = $param->getPosition();
+                                }
 
+                                    $call = array($class, $method->getName());
+                                    $call[] = $args;
+                                    $call[] = null;
+                                    $call[] = $noAuth;
+                                    $this->map[strtoupper($httpMethod)][$url] = $call;
+                                foreach ($args as $key => $value) {
+                                    $call = array($class, $method->getName());
+                                    $url .= '/$'.$key;
+                                    $call[] = $args;
+                                    $call[] = null;
+                                    $call[] = $noAuth;
+                                    $this->map[strtoupper($httpMethod)][$url] = $call;
+                                }
+                            }
+                        }
+
+                        if ($chk) {
+                            $url = strtolower($basePath.$method->getName());
+                            if ($url && $url[strlen($url) - 1] == '/') {
+                                $url = substr($url, 0, -1);
+                            }
+
+                            $args = array();
+                            foreach ($params as $param) {
+                                $args[$param->getName()] = $param->getPosition();
+                            }
                                 $call = array($class, $method->getName());
                                 $call[] = $args;
                                 $call[] = null;
                                 $call[] = $noAuth;
-                                $this->map[strtoupper($httpMethod)][$url] = $call;
+                                $this->map['GET'][$url] = $call;
                             foreach ($args as $key => $value) {
                                 $call = array($class, $method->getName());
                                 $url .= '/$'.$key;
                                 $call[] = $args;
                                 $call[] = null;
                                 $call[] = $noAuth;
-                                $this->map[strtoupper($httpMethod)][$url] = $call;
+                                $this->map['GET'][$url] = $call;
                             }
-                        }
-                    }
-
-                    if ($chk) {
-                        $url = strtolower($basePath.$method->getName());
-                        if ($url && $url[strlen($url) - 1] == '/') {
-                            $url = substr($url, 0, -1);
-                        }
-
-                        $args = array();
-                        foreach ($params as $param) {
-                            $args[$param->getName()] = $param->getPosition();
-                        }
-                            $call = array($class, $method->getName());
-                            $call[] = $args;
-                            $call[] = null;
-                            $call[] = $noAuth;
-                            $this->map['GET'][$url] = $call;
-                        foreach ($args as $key => $value) {
-                            $call = array($class, $method->getName());
-                            $url .= '/$'.$key;
-                            $call[] = $args;
-                            $call[] = null;
-                            $call[] = $noAuth;
-                            $this->map['GET'][$url] = $call;
                         }
                     }
                 }
@@ -528,7 +546,8 @@ class RestServer
         }
     }
 
-    public function getPath()  {
+    public function getPath()
+    {
         $path = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
         // remove root from path
         if ($this->root) {
@@ -543,7 +562,8 @@ class RestServer
         return $path;
     }
 
-    public function getMethod()    {
+    public function getMethod()
+    {
         $method = $_SERVER['REQUEST_METHOD'];
         $override = isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] : (isset($_GET['method']) ? $_GET['method'] : '');
         if ($method == 'POST' && strtoupper($override) == 'PUT') {
@@ -593,7 +613,8 @@ class RestServer
         return new Request($this->jsonAssoc);
     }
 
-    public function sendData($data)     {
+    public function sendData($data)
+    {
         header("Cache-Control: no-cache, must-revalidate");
         header("Expires: 0");
         header("Access-Control-Allow-Credentials: true");

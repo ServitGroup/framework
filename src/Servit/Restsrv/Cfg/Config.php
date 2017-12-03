@@ -22,11 +22,16 @@ class Config
 
     public function __set($prop, $value)
     {
-             $this->values->$prop = $value;
+         $this->values->$prop = $value;
     }
 
     public function __toString()
     {
         return $this->values;
+    }
+
+    public function toArray()
+    {
+        return   json_decode(json_encode($this->values), true);
     }
 }

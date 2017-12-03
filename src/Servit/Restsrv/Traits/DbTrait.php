@@ -38,14 +38,15 @@ trait DbTrait
   */
     public function store()
     {
-        if ($this->model() && $this->server->data) {
+        $data = isset($this->input) ? $this->input->input->toArray() : [] ;
+        if ($this->model() && $data) {
             $item = $this->model();
-            foreach ($this->server->data as $key => $value) {
+            foreach ($data as $key => $value) {
                 $item->$key = $value;
             }
-            return ['db'=>true,'rs'=>$item->save(),'status'=>true];
+            return ['db'=>true,'rs'=>$item->save(),'status'=>true,'data'=>$this->input];
         } else {
-            return ['db'=>false,'rs'=>null,'status'=>true];
+            return ['db'=>false,'rs'=>null,'status'=>true,'data'=>$this->input];
         }
     }
 
@@ -57,18 +58,19 @@ trait DbTrait
   */
     public function update($id = null)
     {
+        $data = isset($this->input) ? $this->input->input->toArray() : [] ;
         if ($this->model() && $id) {
             $item = $this->model()->find($id);
             if ($item) {
-                foreach ($this->server->data as $key => $value) {
+                foreach ($data as $key => $value) {
                     $item->$key = $value;
                 }
                 $rs = $item->save();
-                return ['db'=>true,'rs'=>$rs, 'data'=>$item,'status'=>true];
+                return ['db'=>true,'rs'=>$rs, 'data'=>$item,'status'=>true,'input'=>$data];
             }
-            return ['db'=>true,'data'=>[],'rs'=>0, 'status'=>true,'msg'=>'no by id'];
+            return ['db'=>true,'data'=>[],'rs'=>0, 'status'=>true,'msg'=>'no by id','input'=>$data];
         } else {
-            return ['db'=>false,'data'=>[],'status'=>true];
+            return ['db'=>false,'data'=>[],'status'=>true,'input'=>$data];
         }
     }
 
