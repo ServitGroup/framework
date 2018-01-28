@@ -17,14 +17,21 @@ class BaseModel extends Model
             $input = Request::getInstance();
             // dump($input->posts);
             $columns = $model->getTableColumns();
-            foreach ($columns as $key => $value) {
-                if ($value == 'created_by') {
+                // foreach ($columns as $key => $value) {
+                //     if ($value == 'created_by') {
+                //         isset($input->user) ? $model->created_by = $input->user->username : null;
+                //     }
+                //     if ($value == 'updated_by') {
+                //         isset($input->user) ? $model->updated_by = $input->user->username : null;
+                //     }
+                // }
+
+                if($model->hasCreatedBy){ 
                     isset($input->user) ? $model->created_by = $input->user->username : null;
                 }
-                if ($value == 'updated_by') {
+                if($model->hasUpdatedBy){
                     isset($input->user) ? $model->updated_by = $input->user->username : null;
                 }
-            }
         });
 
         static::created(function ($model) {
@@ -33,12 +40,14 @@ class BaseModel extends Model
         static::updating(function ($model) {
             //dump('updating');
             $input = Request::getInstance();
-            $columns = $model->getTableColumns();
-            foreach ($columns as $key => $value) {
-                if ($value == 'updated_by') {
+            // $columns = $model->getTableColumns();
+            // foreach ($columns as $key => $value) {
+                // if ($value == 'updated_by') {
+                if($model->hasUpdateBy){
                     isset($input->user) ? $model->updated_by = $input->user->username : null;
                 }
-            }
+                // }
+            // }
         });
         static::updated(function ($model) {
             //dump('updated');

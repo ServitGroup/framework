@@ -44,9 +44,10 @@ trait DbTrait
             foreach ($data as $key => $value) {
                 $item->$key = $value;
             }
-            return ['db'=>true,'rs'=>$item->save(),'status'=>true,'data'=>$this->input];
+          $rs = $item->save();
+            return ['db'=>true,'rs'=>$rs,'status'=>true,'input'=>$this->input,'data'=>$item];
         } else {
-            return ['db'=>false,'rs'=>null,'status'=>true,'data'=>$this->input];
+            return ['db'=>false,'rs'=>null,'status'=>true,'input'=>$this->input,'data'=>null];
         }
     }
 

@@ -284,6 +284,18 @@ class RestServer
         $this->jsonAssoc = ($value === true);
     }
 
+    public function includeDir($path)
+    {
+        $dir = new \RecursiveDirectoryIterator($path);
+        $iterator = new \RecursiveIteratorIterator($dir);
+        foreach ($iterator as $file) {
+            $fname = $file->getFilename();
+            if (preg_match('%\.php$%', $fname)) {
+                if($fname != 'index.php') require_once $file->getPathname();
+            }
+        }
+    }
+    
     public function addClass($class, $basePath = '')
     {
         $path = glob($_SERVER["DOCUMENT_ROOT"])[0];
@@ -619,9 +631,10 @@ class RestServer
         header("Expires: 0");
         header("Access-Control-Allow-Credentials: true");
         header('Access-Control-Max-Age: 1000');
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Access-Control-Allow-Headers, Authorization, X-Requested-With');
-        // header("Access-Control-Allow-Headers: *");
+        header('Access-Control-Allow-Origin: * ');
+        // header('Access-Control-Allow-Headers: Origin, Content-Type, Accept, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Auth-Token');
+        // header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token, Origin, Authorization');
+        header("Access-Control-Allow-Headers: *");
         header('Access-Control-Expose-Headers: Authorization');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
         // header('Content-Type: application/json; charset=utf-8');
