@@ -296,10 +296,11 @@ class RestServer
         }
     }
     
-    public function addClass($class, $basePath = '')
+    public function addClass($class, $basePath = '',$sys='')
     {
         $path = glob($_SERVER["DOCUMENT_ROOT"])[0];
-        $filepath = $path.$this->root.'controllers/'.$class.'.php';
+        if($sys) $sys .='/';
+        $filepath = $path.$this->root.'controllers/'.$sys.$class.'.php';
         if (file_exists($filepath)) {
             require_once($filepath);
             $this->loadCache();
@@ -321,10 +322,11 @@ class RestServer
         }
     }
 
-    public function addThemeClass($class)
+    public function addThemeClass($class,$sys='')
     {
+        if($sys) $sys .= '/';
         $path = glob($_SERVER["DOCUMENT_ROOT"])[0];
-        $filepath = $path.$this->root.'controllers/'.$class.'.php';
+        $filepath = $path.$this->root.'controllers/'.$sys.$class.'.php';
         if (file_exists($filepath)) {
             require_once($filepath);
             $class = new $class();
