@@ -100,7 +100,11 @@ class Request extends Config
     {
         $o = new Config();
         foreach ($_GET as $key => $value) {
-            $o->{$key} = filter_input(INPUT_GET, $key);
+            if(gettype($_GET[$key]) == 'array'){
+                $o->{$key} = filter_input(INPUT_GET, $key, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            } else {
+                $o->{$key} = filter_input(INPUT_GET, $key);
+            }
         }
         $this->gets = $o;
     }
