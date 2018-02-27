@@ -4,14 +4,14 @@ trait HasPermissions
 {
     public static function findById(int $id, $guardName = null)
     {
-        $guardName = $guardName ?? 'web';
+        $guardName = $guardName ? $guardName : 'web';
         $role = static::where('id', $id)->where('guard_name', $guardName)->first();
         return $role;
     }
 
     public static function findByName(string $name, $guardName = null)
     {
-        $guardName = $guardName ?? 'web';
+        $guardName = $guardName ?$guardName : 'web';
         $role = static::where('name', $name)->where('guard_name', $guardName)->first();
         return $role;
     }
@@ -48,7 +48,7 @@ trait HasPermissions
         if (is_string($permission)) {
             $permission = Permission::findByName(
                 $permission,
-                $guardName ?? $this->getDefaultGuardName()
+                $guardName ? $guardName : $this->getDefaultGuardName()
             );
         }
 

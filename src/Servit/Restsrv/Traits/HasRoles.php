@@ -275,7 +275,7 @@ trait HasRoles
         if (is_string($permission)) {
             $permission = app(Permission::class)->findByName(
                 $permission,
-                $guardName ?? $this->getDefaultGuardName()
+                $guardName ? $guardName : $this->getDefaultGuardName()
             );
         }
 
