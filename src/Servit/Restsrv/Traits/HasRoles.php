@@ -1,5 +1,6 @@
 <?php
 namespace Servit\Restsrv\Traits;
+
 trait HasRoles
 {
     use HasPermissions;
@@ -67,7 +68,7 @@ trait HasRoles
                 return $role;
             }
 
-            return app(Role::class)->findByName($role, $this->getDefaultGuardName());
+            return \Role::findByName($role, $this->getDefaultGuardName());
         }, $roles);
 
         return $query->whereHas('roles', function ($query) use ($roles) {
@@ -97,7 +98,7 @@ trait HasRoles
                 return $permission;
             }
 
-            return app(Permission::class)->findByName($permission, $this->getDefaultGuardName());
+            return \Permission::findByName($permission, $this->getDefaultGuardName());
         }, $permissions);
     }
 
@@ -158,8 +159,6 @@ trait HasRoles
             ->all();
 
         $this->roles()->saveMany($roles);
-
-        $this->forgetCachedPermissions();
 
         return $this;
     }
@@ -273,14 +272,14 @@ trait HasRoles
     public function hasPermissionTo($permission, $guardName = null)
     {
         if (is_string($permission)) {
-            $permission = app(Permission::class)->findByName(
+            $permission = \Permission::findByName(
                 $permission,
                 $guardName ? $guardName : $this->getDefaultGuardName()
             );
         }
 
         if (is_int($permission)) {
-            $permission = app(Permission::class)->findById($permission, $this->getDefaultGuardName());
+            $permission = \Permission::findById($permission, $this->getDefaultGuardName());
         }
 
         return $this->hasDirectPermission($permission) || $this->hasPermissionViaRole($permission);
@@ -330,14 +329,14 @@ trait HasRoles
     public function hasDirectPermission($permission)
     {
         if (is_string($permission)) {
-            $permission = app(Permission::class)->findByName($permission, $this->getDefaultGuardName());
+            $permission = \Permission::findByName($permission, $this->getDefaultGuardName());
             if (! $permission) {
                 return false;
             }
         }
 
         if (is_int($permission)) {
-            $permission = app(Permission::class)->findById($permission, $this->getDefaultGuardName());
+            $permission = \Permission::findById($permission, $this->getDefaultGuardName());
             if (! $permission) {
                 return false;
             }
@@ -384,11 +383,11 @@ trait HasRoles
     protected function getStoredRole($role)
     {
         if (is_numeric($role)) {
-            return app(Role::class)->findById($role, $this->getDefaultGuardName());
+            return \Role::findById($role, $this->getDefaultGuardName());
         }
 
         if (is_string($role)) {
-            return app(Role::class)->findByName($role, $this->getDefaultGuardName());
+            return \Role::findByName($role, $this->getDefaultGuardName());
         }
 
         return $role;
@@ -445,5 +444,4 @@ trait HasRoles
     {
         return $this->cant($ability, $arguments);
     }
-    
 }

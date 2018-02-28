@@ -1,5 +1,6 @@
 <?php
 namespace Servit\Restsrv\Traits;
+
 trait HasPermissions
 {
     public static function findById(int $id, $guardName = null)
@@ -85,7 +86,20 @@ trait HasPermissions
 
     protected function getGuardNames() 
     {
-        return $this->get_name;
+        $model = $this;
+        if (is_object($model)) {
+            $guardName = $model->guard_name ? $model->guard_name : null;
+            }
+
+            if (!isset($guardName)) {
+                $class = is_object($model) ? get_class($model) : $model;
+                $guardName = isset((new \ReflectionClass($class))->getDefaultProperties()['guard_name']) ? ( new \ReflectionClass($class))->getDefaultProperties()['guard_name'] : null;
+            }
+
+            if ($guardName) {
+                return collect($guardName);
+            }
+            return collect(['web']);
     }
 
     public function hasDirectPermission($permission) 
@@ -105,5 +119,12 @@ trait HasPermissions
         }
 
         return $this->permissions->contains('id', $permission->id);
+    }
+
+    protected function ensureModelSharesGuard($roleOrPermission)
+    {
+        if (!$this->getGuardNames()->contains($roleOrPermission->guard_name)) {
+            throw new Exception("Error " . $roleOrPermission->guard_name, 1);
+        }
     }
 }
