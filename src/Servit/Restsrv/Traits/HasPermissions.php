@@ -93,8 +93,9 @@ trait HasPermissions
 
             if (!isset($guardName)) {
                 $class = is_object($model) ? get_class($model) : $model;
-                $gname = (new \ReflectionClass($class))->getDefaultProperties()['guard_name'];
-                $guardName = isset($gname) ? ( new \ReflectionClass($class))->getDefaultProperties()['guard_name'] : null;
+                $gname = (new \ReflectionClass($class))->getDefaultProperties();
+                
+                $guardName = isset($gname['guard_name']) ? ( new \ReflectionClass($class))->getDefaultProperties()['guard_name'] : null;
             }
 
             if ($guardName) {
