@@ -700,7 +700,7 @@ class RestServer
      * @param password
      */
 
-    public function setConnection($prefix = '', $dbname = null, $host = null, $username = null, $password = null, $charset = 'utf8', $collation = 'utf8_unicode_ci')
+    public function setConnection($prefix = '', $dbname = null, $host = null, $username = null, $password = null, $charset = 'utf8', $collation = 'utf8_unicode_ci',$connection='default')
     {
         $config = $this->config->dbconfig;
         $config['database'] = ( $dbname ?: DB_NAME );
@@ -712,7 +712,7 @@ class RestServer
         $config['collation'] =$collation;
         
         $capsule = new Capsule;
-        $capsule->addConnection($config, 'default');
+        $capsule->addConnection($config, $connection);
         $capsule->bootEloquent();
         $this->config->dbconfig = $config;
         // Capsule::setTablePrefix($prefix);
@@ -721,6 +721,16 @@ class RestServer
         // echo Capsule::getTablePrefix();
         // $this->server->setconnection() use in controller
     }
+
+    public function setConnectioncfg($config,$connection='default'){
+        if($config){
+            $capsule = new Capsule;
+            $capsule->addConnection($config, $connection);
+            $capsule->bootEloquent();
+            $this->config->dbconfig = $config;
+        }
+    }
+
 
     private function xml_encode($mixed, $domElement = null, $DOMDocument = null)
     {
