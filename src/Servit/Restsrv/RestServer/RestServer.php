@@ -141,6 +141,7 @@ class RestServer
     protected $map = array();
     protected $errorClasses = array();
     protected $cached;
+    protected $capsule;
     private $_token = null ;  // string payload  header.payload.sinager
 
     /**
@@ -168,6 +169,7 @@ class RestServer
         $this->server = $_SERVER;
         if ($config) {
             $this->config = $config;
+            $this->capsule = $config->capsule;
         } else {
             $this->config = new Config();
         }
@@ -702,6 +704,7 @@ class RestServer
 
     public function setConnection($prefix = '', $dbname = null, $host = null, $username = null, $password = null, $charset = 'utf8', $collation = 'utf8_unicode_ci',$connection='default')
     {
+        // for new and reset config
         $config = $this->config->dbconfig;
         $config['database'] = ( $dbname ?: DB_NAME );
         $config['prefix'] = ( $prefix ?:'');
@@ -710,10 +713,9 @@ class RestServer
         $config['password'] = ($password ?: DB_PASSWORD);
         $config['charset'] =$charset;
         $config['collation'] =$collation;
-        
-        $capsule = new Capsule;
-        $capsule->addConnection($config, $connection);
-        $capsule->bootEloquent();
+        $this->capsule = new Capsule;
+        $this->capsule->addConnection($config, $connection);
+        $this->capsule->bootEloquent();
         $this->config->dbconfig = $config;
         // Capsule::setTablePrefix($prefix);
         // echo Capsule::getTablePrefix();
@@ -722,11 +724,18 @@ class RestServer
         // $this->server->setconnection() use in controller
     }
 
-    public function setConnectioncfg($config,$connection='default'){
-        if($config){
-            $capsule = new Capsule;
-            $capsule->addConnection($config, $connection);
-            $capsule->bootEloquent();
+
+    /**
+     * $config =  array of config 
+     * $connection  string of nameconnect ex  dba  dbb dbc
+     */
+    public function addConnection($config,$connection = 'default'){
+        if($this->capsule && $config){
+            if($connection == 'default') {
+                $this->capsule = new Capsule();
+            }
+            $this->capsule->addConnection($config, $connection);
+            $this->capsule->bootEloquent();
             $this->config->{$connection}  = $config;
         }
     }
