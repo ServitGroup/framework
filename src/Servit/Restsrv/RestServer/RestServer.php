@@ -38,6 +38,8 @@ use ReflectionObject;
 use ReflectionMethod;
 use DOMDocument;
 use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Events\Dispatcher;
+use Illuminate\Container\Container;
 
 //------------- INIT----------------------------------------
 // Optional array of authorized client IPs for a bit of security
@@ -715,6 +717,7 @@ class RestServer
         $config['collation'] =$collation;
         $this->capsule = new Capsule;
         $this->capsule->addConnection($config, $connection);
+        $this->capsule->setEventDispatcher(new Dispatcher(new Container));
         $this->capsule->bootEloquent();
         $this->config->dbconfig = $config;
         // Capsule::setTablePrefix($prefix);
@@ -735,6 +738,7 @@ class RestServer
                 $this->capsule = new Capsule();
             }
             $this->capsule->addConnection($config, $connection);
+            $this->capsule->setEventDispatcher(new Dispatcher(new Container));
             $this->capsule->bootEloquent();
             $this->config->{$connection}  = $config;
         }
