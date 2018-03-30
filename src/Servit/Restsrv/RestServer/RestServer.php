@@ -727,7 +727,7 @@ class RestServer
             $capsule = new Capsule;
             $capsule->addConnection($config, $connection);
             $capsule->bootEloquent();
-            $this->config->dbconfig = $config;
+            $this->config->{$connection}  = $config;
         }
     }
 
