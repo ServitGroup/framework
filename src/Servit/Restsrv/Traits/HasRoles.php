@@ -25,7 +25,7 @@ trait HasRoles
         return $this->morphToMany(
             'Role',
             'model',
-            'model_has_roles',
+            '_model_has_roles',
             'model_id',
             'role_id'
         );
@@ -37,9 +37,9 @@ trait HasRoles
     public function permissions()
     {
         return $this->morphToMany(
-            'permission',
+            'Permission',
             'model',
-            'model_has_permissions',
+            '_model_has_permissions',
             'model_id',
             'permission_id'
         );
